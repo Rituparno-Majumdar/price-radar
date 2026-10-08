@@ -34,7 +34,7 @@ def main():
     )
     parser.add_argument(
         "--provider",
-        choices=["direct", "zenrows", "scraper_api", "brightdata"],
+        choices=["direct", "scrape_do", "zenrows", "scraper_api", "brightdata"],
         default="direct",
         help="Transport provider to use (default: direct)",
     )
@@ -51,9 +51,13 @@ def main():
 
     args = parser.parse_args()
 
+    from fetcher.transports.scrape_do import ScrapeDoTransport
+
     # Configure transport
     if args.provider == "direct":
         transport = DirectTransport()
+    elif args.provider == "scrape_do":
+        transport = ScrapeDoTransport(token=args.api_key)
     else:
         transport = SmartProxyTransport(
             provider=args.provider,
