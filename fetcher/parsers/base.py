@@ -91,26 +91,38 @@ class BasePlatformParser(abc.ABC):
             re.DOTALL | re.IGNORECASE,
         )
         matches = pattern.findall(html)
+        decoder = json.JSONDecoder()
         for match in matches:
-            try:
-                data = json.loads(match.strip())
-                items = data if isinstance(data, list) else [data]
-                for item in items:
-                    if item.get("@type") == "Product":
-                        offers = item.get("offers", {})
-                        if isinstance(offers, list):
-                            offers = offers[0] if offers else {}
-                        price = offers.get("price") or offers.get("lowPrice")
-                        if price:
-                            return {
-                                "title": item.get("name"),
-                                "currency": offers.get("priceCurrency", "INR"),
-                                "current_price": float(str(price).replace(",", "")),
-                                "original_price": None,
-                                "in_stock": "InStock" in str(offers.get("availability", "")),
-                            }
-            except Exception:
+            content = match.strip()
+            if not content:
                 continue
+            data = None
+            try:
+                data = json.loads(content)
+            except Exception:
+                try:
+                    data, _ = decoder.raw_decode(content.lstrip())
+                except Exception:
+                    continue
+
+            if not data:
+                continue
+
+            items = data if isinstance(data, list) else [data]
+            for item in items:
+                if isinstance(item, dict) and item.get("@type") == "Product":
+                    offers = item.get("offers", {})
+                    if isinstance(offers, list):
+                        offers = offers[0] if offers else {}
+                    price = offers.get("price") or offers.get("lowPrice")
+                    if price:
+                        return {
+                            "title": item.get("name"),
+                            "currency": offers.get("priceCurrency", "INR"),
+                            "current_price": float(str(price).replace(",", "")),
+                            "original_price": None,
+                            "in_stock": "InStock" in str(offers.get("availability", "")),
+                        }
         return None
 
     def _extract_opengraph(self, html: str) -> Optional[Dict[str, Any]]:

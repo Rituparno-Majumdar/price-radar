@@ -12,8 +12,10 @@ class RelianceParser(BasePlatformParser):
     PLATFORM_NAME = "reliance_digital"
 
     def extract_product_id(self, url: str) -> Optional[str]:
-        # Reliance product URLs: /p/<slug>/<article_code>
-        match = re.search(r"/(\d{8,12})(?:\?|$)", url)
+        # Reliance product URLs: /p/<slug>/<article_code> or /product/<slug>-<article_code>
+        match = re.search(r"(?:/p/|/product/.*?-?)(\d{6,12})(?:\?|$)", url)
+        if not match:
+            match = re.search(r"(\d{6,12})(?:\?|$)", url)
         return match.group(1) if match else None
 
     def _extract_dom_fallback(self, html: str) -> Dict[str, Any]:
