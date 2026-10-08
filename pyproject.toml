@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "price-radar"
+version = "0.1.0"
+description = "Resilient e-commerce price scraping engine for Indian platforms (Amazon IN, Flipkart, Croma, Reliance Digital)"
+readme = "README.md"
+authors = [{ name = "Rituparno Majumdar", email = "majumdarrituparno@gmail.com" }]
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.28.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0"
+]
+
+[project.scripts]
+price-radar = "cli:main"
+
+[tool.setuptools.packages.find]
+include = ["fetcher*", "fetcher.parsers*", "fetcher.transports*"]
